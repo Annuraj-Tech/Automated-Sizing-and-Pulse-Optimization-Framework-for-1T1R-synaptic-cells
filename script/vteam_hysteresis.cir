@@ -1,0 +1,38 @@
+* ====================================================================
+* 1T1R VTEAM Pinched Hysteresis Loop (1 MHz Slow Sweep)
+* ====================================================================
+.include ptm45.pm
+
+.subckt vteam_model te be w_state
+.param Ron = 100 Roff = 200000 Von = -1.78 Voff = 0.0115 Kon = -8e-13 Koff = 8e-13 alpha_on = 3 alpha_off = 3 w_on = 0 w_off = 3e-9 w_init = 1.5e-9
+
+Cw w_state 0 1.0 IC={w_init}
+Rleak w_state 0 1e12
+
+B_dw 0 w_state I = ( V(te)-V(be) > {Voff} ? (V(w_state) < {w_off} ? {Koff} * pow((V(te)-V(be))/{Voff} - 1, {alpha_off}) : 0) : ( V(te)-V(be) < {Von} ? (V(w_state) > {w_on} ? {Kon} * pow((V(te)-V(be))/{Von} - 1, {alpha_on}) : 0) : 0 ) )
+
+B_mem te be I = (V(te)-V(be)) / ( {Ron} + ({Roff} - {Ron}) * (V(w_state) / {w_off}) )
+.ends vteam_model
+
+M1 mem_node wl_node 0 0 nmos l=45n w=500n
+Xmem bl mem_node w_state vteam_model
+
+Vwl wl_node 0 DC 1.5
+* Frequency reduced to 1 MHz to allow full filament migration
+Vbl bl 0 SIN(0 2.5 1MEG)
+
+.control
+  * Simulation time extended to 3000ns to capture exactly 3 full cycles
+  tran 1n 3000n 0 1n uic
+  
+  let cell_current = -i(Vbl)
+  let mem_voltage = v(bl) - v(mem_node)
+  
+  set color0 = white
+  set color1 = black
+  set color2 = blue
+  
+  * Added xlimit to prevent the sides from visually clipping against the graph frame
+  plot cell_current vs mem_voltage xlimit -3.0 3.0 title 'VTEAM Pinched Hysteresis (1 MHz)' xlabel 'Voltage (V)' ylabel 'Current (A)'
+.endc
+.end

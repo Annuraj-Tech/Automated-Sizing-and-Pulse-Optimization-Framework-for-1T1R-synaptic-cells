@@ -1,0 +1,35 @@
+* ====================================================================
+* 1T1R VTEAM Exact Behavioral (Strict Syntax)
+* ====================================================================
+.include ptm45.pm
+
+.subckt vteam_model te be w_state
+.param Ron = 100 Roff = 200000 Von = -1.78 Voff = 0.0115 Kon = -8e-10 Koff = 8e-10 alpha_on = 3 alpha_off = 3 w_on = 0 w_off = 3e-9 w_init = 1.5e-9
+
+Cw w_state 0 1.0 IC={w_init}
+Rleak w_state 0 1e12
+
+* Strict ngspice ternary syntax and explicit parameter braces
+B_dw 0 w_state I = ( V(te)-V(be) > {Voff} ? (V(w_state) < {w_off} ? {Koff} * pow((V(te)-V(be))/{Voff} - 1, {alpha_off}) : 0) : ( V(te)-V(be) < {Von} ? (V(w_state) > {w_on} ? {Kon} * pow((V(te)-V(be))/{Von} - 1, {alpha_on}) : 0) : 0 ) )
+
+B_mem te be I = (V(te)-V(be)) / ( {Ron} + ({Roff} - {Ron}) * (V(w_state) / {w_off}) )
+.ends vteam_model
+
+M1 mem_node wl_node 0 0 nmos l=45n w=500n
+Xmem bl mem_node w_state vteam_model
+
+Vwl wl_node 0 PULSE(0 1.5 5n 0.1n 0.1n 450n 500n)
+Vbl bl 0 PULSE(0 2.5 10n 0.1n 0.1n 300n 500n)
+
+.control
+  tran 0.1n 500n 0 0.1n uic
+  let w_nm = v(w_state) * 1e9
+  
+  set color0 = white
+  set color1 = black
+  set color2 = red
+  set color3 = blue
+  set color4 = green
+  plot v(wl_node) v(bl) w_nm title '1T1R Transient: Fixed Parameters' xlabel 'Time' ylabel 'Voltage (V) / w_state (nm)'
+.endc
+.end

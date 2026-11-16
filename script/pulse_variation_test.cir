@@ -1,0 +1,67 @@
+* ====================================================================
+* 1T1R VTEAM Pulse Width Variation Test
+* ====================================================================
+.include ptm45.pm
+
+.subckt vteam_model te be w_state
+.param Ron = 100 Roff = 200000 Von = -1.78 Voff = 0.0115 Kon = -8e-10 Koff = 8e-10 alpha_on = 3 alpha_off = 3 w_on = 0 w_off = 3e-9 w_init = 1.5e-9
+
+Cw w_state 0 1.0 IC={w_init}
+Rleak w_state 0 1e12
+
+B_dw 0 w_state I = ( V(te)-V(be) > {Voff} ? (V(w_state) < {w_off} ? {Koff} * pow((V(te)-V(be))/{Voff} - 1, {alpha_off}) : 0) : ( V(te)-V(be) < {Von} ? (V(w_state) > {w_on} ? {Kon} * pow((V(te)-V(be))/{Von} - 1, {alpha_on}) : 0) : 0 ) )
+B_mem te be I = (V(te)-V(be)) / ( {Ron} + ({Roff} - {Ron}) * (V(w_state) / {w_off}) )
+.ends vteam_model
+
+.subckt cell_1t1r wl bl w_state
+M1 mem_node wl 0 0 nmos l=45n w=500n
+Xmem bl mem_node w_state vteam_model
+.ends cell_1t1r
+
+X1 wl bl40 w40 cell_1t1r
+X2 wl bl80 w80 cell_1t1r
+X3 wl bl120 w120 cell_1t1r
+X4 wl bl150 w150 cell_1t1r
+* Updated to 210ns
+X5 wl bl210 w210 cell_1t1r
+
+Vwl wl 0 DC 1.5
+Vbl40 bl40 0 PULSE(0 2.5 10n 0.1n 0.1n 40n 1000n)
+Vbl80 bl80 0 PULSE(0 2.5 10n 0.1n 0.1n 80n 1000n)
+Vbl120 bl120 0 PULSE(0 2.5 10n 0.1n 0.1n 120n 1000n)
+Vbl150 bl150 0 PULSE(0 2.5 10n 0.1n 0.1n 150n 1000n)
+* Updated to 210ns
+Vbl210 bl210 0 PULSE(0 2.5 10n 0.1n 0.1n 210n 1000n)
+
+.control
+  tran 0.1n 350n 0 0.1n uic
+  
+  let w40_nm = v(w40) * 1e9
+  let w80_nm = v(w80) * 1e9
+  let w120_nm = v(w120) * 1e9
+  let w150_nm = v(w150) * 1e9
+  let w210_nm = v(w210) * 1e9
+  
+  set color0 = white
+  set color1 = black
+  
+  * Increase trace and grid line width (try 2 or 3)
+  set xbrushwidth = 2
+  
+  * Assign colors sequentially. Trace 6 and Trace 11 are set to darkgreen.
+  set color2 = red
+  set color3 = blue
+  set color4 = blue
+  set color5 = blue
+  set color6 = blue
+  set color7 = darkgreen
+  
+  set color8 = orange
+  set color9 = violet
+  set color10 = brown
+  set color11 = pink
+  set color12 = darkgreen
+  
+  plot v(wl) v(bl40) v(bl80) v(bl120) v(bl150) v(bl210) w40_nm w80_nm w120_nm w150_nm w210_nm title '1T1R: Pulse Width Variation vs State' xlabel 'Time' ylabel 'Voltage (V) / State (nm)'
+.endc
+.end

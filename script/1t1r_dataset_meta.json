@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-01T22:12:31",
+  "ngspice": "******",
+  "ptm_file": "C:/Users/Annuraj/Desktop/PSPICE PROJECTS/term/script/ptm45.pm",
+  "nmos_model": "nmos",
+  "seed": 12345,
+  "vteam": {
+    "Ron": 100.0,
+    "Roff": 200000.0,
+    "Von": -1.78,
+    "Voff": 0.0115,
+    "Kon": -8e-13,
+    "Koff": 8e-13,
+    "alpha_on": 3,
+    "alpha_off": 3,
+    "w_on": 0.0,
+    "w_off": 3e-09,
+    "w_init": 1.5e-09,
+    "Cw_F": 1.0
+  },
+  "notes": "State node stores w in nm (NM=1e9 unit conversion, no rate scaling). Rectangular window. RESET-direction pulses only (device V > Voff). Pulse width designed per sample from the VTEAM rate for target dw.",
+  "v_bl_range": [
+    0.8,
+    2.0
+  ],
+  "dw_target_range_nm": [
+    0.02,
+    1.4
+  ],
+  "pw_limits_s": [
+    1e-06,
+    0.01
+  ],
+  "w_mos_range_nm": [
+    200.0,
+    1200.0
+  ],
+  "vwl": 1.5,
+  "randomize_init": false,
+  "tmax_div": 100
+}
