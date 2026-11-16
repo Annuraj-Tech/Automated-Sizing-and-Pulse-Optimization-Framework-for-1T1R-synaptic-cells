@@ -1,0 +1,6 @@
+{
+  "train_rows": 800,
+  "test_rows": 200,
+  "seed": 42,
+  "note": "Deployment GPs refit on all rows; test scores use the 80/20 fit."
+}

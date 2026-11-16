@@ -1,0 +1,7 @@
+target,feature,importance_mean,importance_std
+Final resistance (kOhm),w_mos_nm,0.00011198285011352893,1.5443850527924282e-05
+Final resistance (kOhm),v_bl,14.420994263307401,4.177623119769965
+Final resistance (kOhm),log10_t_pw_us,18.521523940982984,6.151490327591061
+log10(device energy / pJ),w_mos_nm,2.0296513518713866e-05,1.1077256273206792e-06
+log10(device energy / pJ),v_bl,0.3051078317409887,0.01998231604355278
+log10(device energy / pJ),log10_t_pw_us,2.7624261150101646,0.19119934329310162

@@ -1,0 +1,25 @@
+feature_set,model,target,test_R2,test_MAE
+"2-input (V, t)","MLP (joint, scaled)",Resistance (kOhm),0.9949805957668741,0.9112938339007541
+"2-input (V, t)","MLP (joint, scaled)",Log10 energy (pJ),0.9995923760527747,0.00810265815097595
+"2-input (V, t)","MLP (joint, scaled)",Energy (pJ),0.9994072529029454,56.19634190597387
+"2-input (V, t)",Linear,Resistance (kOhm),0.7766583065792985,7.840464049908995
+"2-input (V, t)",Linear,Log10 energy (pJ),0.9967787774033824,0.023785092951886303
+"2-input (V, t)",Linear,Energy (pJ),0.9799174537746249,238.1822010967665
+"2-input (V, t)",RandomForest,Resistance (kOhm),0.9922776622034664,0.8879146416666549
+"2-input (V, t)",RandomForest,Log10 energy (pJ),0.998102347820176,0.015304478952439552
+"2-input (V, t)",RandomForest,Energy (pJ),0.9955795909031172,114.5306063826692
+"2-input (V, t)",GaussianProcess,Resistance (kOhm),0.9999207538386398,0.08900594404425646
+"2-input (V, t)",GaussianProcess,Log10 energy (pJ),0.9999898833685175,0.0012465099748033537
+"2-input (V, t)",GaussianProcess,Energy (pJ),0.999979341931319,9.573739149602092
+"3-input (W, V, t)","MLP (joint, scaled)",Resistance (kOhm),0.9944156472590612,1.00867134710456
+"3-input (W, V, t)","MLP (joint, scaled)",Log10 energy (pJ),0.9990125924642911,0.012619037264339652
+"3-input (W, V, t)","MLP (joint, scaled)",Energy (pJ),0.9957724344759512,108.15017547683883
+"3-input (W, V, t)",Linear,Resistance (kOhm),0.7768869988373766,7.827013410295104
+"3-input (W, V, t)",Linear,Log10 energy (pJ),0.9967809939600762,0.02377213866087363
+"3-input (W, V, t)",Linear,Energy (pJ),0.9794632537615143,239.11776668385275
+"3-input (W, V, t)",RandomForest,Resistance (kOhm),0.9900815055293332,1.0096346400000138
+"3-input (W, V, t)",RandomForest,Log10 energy (pJ),0.997518895703881,0.017948075381568278
+"3-input (W, V, t)",RandomForest,Energy (pJ),0.9900654141847469,155.2691694773714
+"3-input (W, V, t)",GaussianProcess,Resistance (kOhm),0.999999864222208,0.0030731792284930037
+"3-input (W, V, t)",GaussianProcess,Log10 energy (pJ),0.9999999916955143,3.557701837360705e-05
+"3-input (W, V, t)",GaussianProcess,Energy (pJ),0.9999999525239234,0.31175451788726094

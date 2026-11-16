@@ -1,0 +1,2 @@
+timestamp,target_r_kohm,desired_energy_pj,width_nm,length_nm,vwl_v,v_bl,t_pw_us,predicted_r_kohm,predicted_energy_pj,r_error_kohm,energy_error_percent,r_tolerance_kohm,energy_tolerance_percent,supported_by_heuristic,meets_surrogate_tolerances,search_seconds
+2026-11-03T13:33:09.064904,158.0,7500.0,698.1808505138063,45.0,1.5,1.787148131004371,296.0098953339327,158.04055244926175,7467.755271502734,0.040552449261753054,0.42992971329687857,1.0,5.0,True,True,0.589488400000846
