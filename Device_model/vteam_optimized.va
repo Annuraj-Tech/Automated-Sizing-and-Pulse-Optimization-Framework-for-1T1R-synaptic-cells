@@ -1,0 +1,73 @@
+`include "disciplines.vams"
+`include "constants.vams"
+
+// Optimized strictly for VTEAM (Model 4) to maximize SPICE automation speed
+module memristor(p, n, w_position);
+    inout p, n;
+    output w_position;
+    
+    electrical p, n, w_position;
+    
+    // Core VTEAM Parameters matching your original setup
+    parameter real Ron = 100;
+    parameter real Roff = 200000;
+    parameter real D = 3e-9;
+    
+    // Non-linear migration constants
+    parameter real K_on = -8e-13;
+    parameter real K_off = 8e-13;
+    parameter real Alpha_on = 3;
+    parameter real Alpha_off = 3;
+    parameter real v_on = -1.78;
+    parameter real v_off = 0.0115;
+    
+    // State and I-V relation
+    parameter real init_state = 0.5;      // Initial state [0:1]
+    parameter integer IV_relation = 0;    // 0 = Linear (V=IR), 1 = Exponential
+    parameter real x_on = 0;
+    parameter real x_off = 3e-9;
+    
+    // Internal continuous variables
+    real dxdt_raw;
+    real dxdt_windowed;
+    real x_state;
+    real lambda;
+    real R_current;
+
+    analog begin
+        // 1. Calculate raw derivative based on VTEAM voltage thresholds
+        if (V(p,n) > v_off) begin
+            dxdt_raw = K_off * pow((V(p,n) / v_off - 1.0), Alpha_off);
+        end else if (V(p,n) < v_on) begin
+            dxdt_raw = K_on * pow((V(p,n) / v_on - 1.0), Alpha_on);
+        end else begin
+            dxdt_raw = 0.0;
+        end
+
+        // 2. Anti-Windup Boundary Windowing
+        // Evaluates prior state to prevent solver lock-up at boundaries
+        if ((x_state >= D) && (dxdt_raw > 0)) begin
+            dxdt_windowed = 0.0;
+        end else if ((x_state <= 0) && (dxdt_raw < 0)) begin
+            dxdt_windowed = 0.0;
+        end else begin
+            dxdt_windowed = dxdt_raw;
+        end
+
+        // 3. Native SPICE Continuous Integration (Replaces discrete dt)
+        x_state = idt(dxdt_windowed, init_state * D);
+
+        // 4. Device I-V Calculation
+        if (IV_relation == 1) begin
+            lambda = ln(Roff/Ron);
+            I(p,n) <+ V(p,n) / (Ron * exp(lambda * (x_state - x_on) / (x_off - x_on)));
+        end else begin
+            // Default linear relation V=IR
+            R_current = Roff * (x_state / D) + Ron * (1.0 - (x_state / D));
+            I(p,n) <+ V(p,n) / R_current;
+        end
+
+        // 5. Output normalized state variable for tracking
+        V(w_position) <+ (x_state / D);
+    end
+endmodule
