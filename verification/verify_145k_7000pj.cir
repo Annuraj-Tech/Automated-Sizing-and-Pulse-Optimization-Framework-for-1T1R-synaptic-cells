@@ -1,0 +1,195 @@
+* 1T1R verification: target R = 145.000000 kOhm, desired energy = 7000.000000 pJ
+* Candidate from forward-model optimisation
+* State voltage represents w in nm: 1 V corresponds numerically to 1 nm
+
+.include "ptm45.pm"
+
+.options method=gear reltol=1e-4 vntol=1e-6 abstol=1e-12
+
+.subckt vteam_model te be w_state
+
+.param Ron=100 Roff=200000
+.param Von=-1.78 Voff=0.0115
+.param Kon=-8e-13 Koff=8e-13
+.param alpha_on=3 alpha_off=3
+.param w_on=0 w_off=3e-9 w_init=1.5e-9
+.param NM=1e9
+
+Cw w_state 0 1.0 IC={w_init*NM}
+Rleak w_state 0 1e15
+
+B_dw 0 w_state I = {NM} *
++ ( V(te)-V(be) > {Voff} ?
++   ( V(w_state) < {w_off*NM} ?
++     {Koff} * pow((V(te)-V(be))/{Voff}-1, {alpha_off}) : 0 )
++   :
++   ( V(te)-V(be) < {Von} ?
++     ( V(w_state) > {w_on*NM} ?
++       {Kon} * pow((V(te)-V(be))/{Von}-1, {alpha_on}) : 0 )
++     : 0 )
++ )
+
+B_mem te be I = (V(te)-V(be)) /
++ ( {Ron} + ({Roff}-{Ron}) *
++   ((V(w_state)/{NM}-{w_on})/({w_off}-{w_on})) )
+
+.ends vteam_model
+
+M1 mem_node wl_node 0 0 nmos l=45n w=693.884000n
+Xmem bl mem_node w_state vteam_model
+
+Vwl wl_node 0 DC 1.5
+
+.param PW=347.047853u
+.param TD={0.10*PW}
+.param TR={0.01*PW}
+.param TF={0.01*PW}
+.param TSTOP={1.32*PW}
+
+Vbl bl 0 PULSE(0 1.560298 {TD} {TR} {TF} {PW} {TSTOP})
+
+.control
+set numdgt=10
+set nomoremode
+
+let pulse_width = 347.047853u
+let stop_time = 1.32 * pulse_width
+let output_step = pulse_width / 500
+let maximum_step = pulse_width / 100
+
+tran $&output_step $&stop_time 0 $&maximum_step uic
+
+let cell_curr = -i(Vbl)
+let cell_vol = v(bl) - v(mem_node)
+let p_dev = cell_vol * cell_curr
+let p_sup = v(bl) * cell_curr
+
+meas tran e_dev integ p_dev from=0 to=$&stop_time
+meas tran e_sup integ p_sup from=0 to=$&stop_time
+
+let w_end_nm = v(w_state)[length(v(w_state))-1]
+
+let r_end_kohm = (100 + (200000-100)*(w_end_nm/3))/1000
+let e_dev_pj = e_dev * 1e12
+let e_sup_pj = e_sup * 1e12
+let imax_ua = maximum(abs(cell_curr)) * 1e6
+
+let r_target = 145.000000
+let e_target = 7000.000000
+let r_tolerance = 1
+let e_tolerance_percent = 2
+
+let r_signed_error = r_end_kohm - r_target
+let r_abs_error = abs(r_signed_error)
+let e_signed_error = e_dev_pj - e_target
+let e_error_percent = 100 * abs(e_signed_error)/e_target
+
+echo
+echo "============= FRESH NGSPICE VERIFICATION ============="
+echo "Candidate width:          693.884000 nm"
+echo "Candidate length:         45 nm"
+echo "Word-line voltage:        1.5 V"
+echo "Bitline amplitude:        1.560298 V"
+echo "Pulse duration:           347.047853 us"
+echo
+echo "Final state (nm):         $&w_end_nm"
+echo "Final resistance (kOhm):  $&r_end_kohm"
+echo "Device energy (pJ):       $&e_dev_pj"
+echo "Bitline supply energy(pJ): $&e_sup_pj"
+echo "Peak bitline current(uA): $&imax_ua"
+echo
+echo "Target resistance(kOhm):  $&r_target"
+echo "Signed R error (kOhm):    $&r_signed_error"
+echo "Absolute R error(kOhm):   $&r_abs_error"
+echo "Desired device energy(pJ): $&e_target"
+echo "Signed energy error(pJ):  $&e_signed_error"
+echo "Absolute energy error(%): $&e_error_percent"
+echo
+
+if w_end_nm < 0
+  echo "INVALID RESULT: state below model range."
+else
+  if w_end_nm > 3
+    echo "INVALID RESULT: state above model range."
+  else
+    if r_abs_error <= r_tolerance
+      echo "Resistance check: PASS"
+      if e_error_percent <= e_tolerance_percent
+        echo "Energy check: PASS"
+        echo "OVERALL: MEETS BOTH SPECIFICATIONS IN THIS SPICE RUN"
+      else
+        echo "Energy check: FAIL"
+        echo "OVERALL: DOES NOT MEET BOTH SPECIFICATIONS"
+      end
+    else
+      echo "Resistance check: FAIL"
+      if e_error_percent <= e_tolerance_percent
+        echo "Energy check: PASS"
+      else
+        echo "Energy check: FAIL"
+      end
+      echo "OVERALL: DOES NOT MEET BOTH SPECIFICATIONS"
+    end
+  end
+end
+
+echo "======================================================"
+
+write verify_145k_7000pj.raw v(bl) v(mem_node) v(w_state) cell_curr p_dev p_sup
+
+echo "Fresh ngspice verification report" > verify_145k_7000pj.log
+echo "============= FRESH NGSPICE VERIFICATION =============" >> verify_145k_7000pj.log
+echo "Candidate width:          693.884000 nm" >> verify_145k_7000pj.log
+echo "Candidate length:         45 nm" >> verify_145k_7000pj.log
+echo "Word-line voltage:        1.5 V" >> verify_145k_7000pj.log
+echo "Bitline amplitude:        1.560298 V" >> verify_145k_7000pj.log
+echo "Pulse duration:           347.047853 us" >> verify_145k_7000pj.log
+echo " " >> verify_145k_7000pj.log
+echo "Final state (nm):         $&w_end_nm" >> verify_145k_7000pj.log
+echo "Final resistance (kOhm):  $&r_end_kohm" >> verify_145k_7000pj.log
+echo "Device energy (pJ):       $&e_dev_pj" >> verify_145k_7000pj.log
+echo "Bitline supply energy(pJ): $&e_sup_pj" >> verify_145k_7000pj.log
+echo "Peak bitline current(uA): $&imax_ua" >> verify_145k_7000pj.log
+echo " " >> verify_145k_7000pj.log
+echo "Target resistance(kOhm):  $&r_target" >> verify_145k_7000pj.log
+echo "Signed R error (kOhm):    $&r_signed_error" >> verify_145k_7000pj.log
+echo "Absolute R error(kOhm):   $&r_abs_error" >> verify_145k_7000pj.log
+echo "Desired device energy(pJ): $&e_target" >> verify_145k_7000pj.log
+echo "Signed energy error(pJ):  $&e_signed_error" >> verify_145k_7000pj.log
+echo "Absolute energy error(%): $&e_error_percent" >> verify_145k_7000pj.log
+echo " " >> verify_145k_7000pj.log
+
+if w_end_nm < 0
+  echo "INVALID RESULT: state below model range." >> verify_145k_7000pj.log
+else
+  if w_end_nm > 3
+    echo "INVALID RESULT: state above model range." >> verify_145k_7000pj.log
+  else
+    if r_abs_error <= r_tolerance
+      echo "Resistance check: PASS" >> verify_145k_7000pj.log
+      if e_error_percent <= e_tolerance_percent
+        echo "Energy check: PASS" >> verify_145k_7000pj.log
+        echo "OVERALL: MEETS BOTH SPECIFICATIONS IN THIS SPICE RUN" >> verify_145k_7000pj.log
+      else
+        echo "Energy check: FAIL" >> verify_145k_7000pj.log
+        echo "OVERALL: DOES NOT MEET BOTH SPECIFICATIONS" >> verify_145k_7000pj.log
+      end
+    else
+      echo "Resistance check: FAIL" >> verify_145k_7000pj.log
+      if e_error_percent <= e_tolerance_percent
+        echo "Energy check: PASS" >> verify_145k_7000pj.log
+      else
+        echo "Energy check: FAIL" >> verify_145k_7000pj.log
+      end
+      echo "OVERALL: DOES NOT MEET BOTH SPECIFICATIONS" >> verify_145k_7000pj.log
+    end
+  end
+end
+
+echo "======================================================" >> verify_145k_7000pj.log
+
+unset askquit
+quit
+
+.endc
+.end

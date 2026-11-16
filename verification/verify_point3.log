@@ -1,0 +1,25 @@
+Fresh ngspice verification report
+============= FRESH NGSPICE VERIFICATION =============
+Candidate width:          699.134000 nm
+Candidate length:         45 nm
+Word-line voltage:        1.5 V
+Bitline amplitude:        1.788833 V
+Pulse duration:           295.716374 us
+ 
+Final state (nm):         2.37193
+Final resistance (kOhm):  158.15
+Device energy (pJ):       7471.15
+Bitline supply energy(pJ): 7489.14
+Peak bitline current(uA): 17.7939
+ 
+Target resistance(kOhm):  158
+Signed R error (kOhm):    0.149605
+Absolute R error(kOhm):   0.149605
+Desired device energy(pJ): 7500
+Signed energy error(pJ):  -28.852
+Absolute energy error(%): 0.384693
+ 
+Resistance check: PASS
+Energy check: PASS
+OVERALL: MEETS BOTH SPECIFICATIONS IN THIS SPICE RUN
+======================================================
