@@ -1,4 +1,4 @@
-# ML-Assisted Programming of 1T1R Synaptic Cells
+# ML-Assisted Programming of 1T1R Hybrid Synaptic Cells
 
 A college term project combining VTEAM memristor modeling, Python-controlled ngspice simulations, regression models, an interactive design interface, and fresh simulation-based verification.
 
